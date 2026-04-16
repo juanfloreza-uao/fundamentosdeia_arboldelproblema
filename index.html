@@ -1,126 +1,245 @@
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font-sans,sans-serif)}
-.wrap{width:100%;overflow-x:auto;padding:12px 0 24px;background:transparent}
-.canvas{position:relative;width:1640px;height:1380px;margin:0 auto}
-svg#bg,svg#lines{position:absolute;inset:0;width:1640px;height:1380px;pointer-events:none}
-svg#bg{z-index:0}svg#lines{z-index:2}
-.legend{display:flex;gap:18px;flex-wrap:wrap;margin:0 0 14px 16px;align-items:center}
-.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-text-secondary)}
-.legend-dot{width:14px;height:14px;border-radius:4px;border:2px solid}
-.ld-effect{background:#e6f1fb;border-color:#378add}
-.ld-cause{background:#faeeda;border-color:#ef9f27}
-.ld-sub-effect{background:#e6f1fb;border-color:#85b7eb}
-.ld-sub-cause{background:#faeeda;border-color:#fac775}
-.ld-central{background:#e1f5ee;border-color:#1d9e75}
-.node{position:absolute;z-index:3;width:232px;min-height:72px;border-radius:14px;padding:11px 13px;cursor:pointer;border:2px solid;transition:transform .15s,box-shadow .15s}
-.node:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.12)}
-.node .badge{display:inline-block;font-size:9.5px;font-weight:600;letter-spacing:.04em;padding:2px 7px;border-radius:20px;margin-bottom:5px;text-transform:uppercase}
-.node .t{font-size:13.5px;font-weight:500;line-height:1.3;color:var(--color-text-primary)}
-.node .r{margin-top:5px;font-size:10px;color:var(--color-text-secondary);font-style:italic;line-height:1.4}
-.node .hint{margin-top:5px;font-size:10px;color:var(--color-text-secondary);display:flex;align-items:center;gap:4px}
-.node .hint::before{content:"▶";font-size:8px}
-.effect{border-color:#378add;background:#e6f1fb}
-.effect .badge{background:#d0e8f9;color:#0c447c}
-.sub-effect{border-color:#85b7eb;background:#e6f1fb}
-.sub-effect .badge{background:#d0e8f9;color:#185fa5}
-.central{width:400px;min-height:120px;border-color:#1d9e75;background:#e1f5ee;border-width:3px;z-index:4}
-.central .t{font-size:14px;color:#085041;line-height:1.4}
+body{font-family:var(--font-sans,sans-serif);background:transparent}
+.wrap{width:100%;overflow:auto;padding:12px 0 28px;background:transparent}
+.canvas{position:relative;width:1900px;height:1680px;margin:0 auto}
+svg#lines{position:absolute;inset:0;width:1900px;height:1680px;pointer-events:none;z-index:2}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 12px 12px;align-items:center}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--color-text-secondary)}
+.legend-dot{width:12px;height:12px;border-radius:3px;border:2px solid}
+.ld-fx{background:#e6f1fb;border-color:#378add}.ld-sfx{background:#e6f1fb;border-color:#85b7eb}
+.ld-cx{background:#faeeda;border-color:#ef9f27}.ld-scx{background:#faeeda;border-color:#fac775}
+.ld-ct{background:#e1f5ee;border-color:#1d9e75}
+.node{position:absolute;z-index:3;width:218px;min-height:68px;border-radius:12px;padding:10px 11px;cursor:pointer;border:2px solid;transition:transform .13s,box-shadow .13s}
+.node:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.11)}
+.node .badge{display:inline-block;font-size:9px;font-weight:600;letter-spacing:.04em;padding:2px 6px;border-radius:20px;margin-bottom:4px;text-transform:uppercase}
+.node .t{font-size:12.5px;font-weight:500;line-height:1.3;color:var(--color-text-primary)}
+.node .r{margin-top:4px;font-size:9.5px;color:var(--color-text-secondary);font-style:italic;line-height:1.35}
+.node .hint{margin-top:4px;font-size:9.5px;color:var(--color-text-secondary);display:flex;align-items:center;gap:3px}
+.node .hint::before{content:"▶";font-size:7.5px}
+.effect{border-color:#378add;background:#e6f1fb}.effect .badge{background:#d0e8f9;color:#0c447c}
+.sub-effect{border-color:#85b7eb;background:#e6f1fb}.sub-effect .badge{background:#d0e8f9;color:#185fa5}
+.central{width:420px;min-height:110px;border-color:#1d9e75;background:#e1f5ee;border-width:3px;z-index:4}
+.central .t{font-size:13.5px;color:#085041;line-height:1.4}
 .central .badge{background:#9fe1cb;color:#04342c}
-.cause{border-color:#ef9f27;background:#faeeda}
-.cause .badge{background:#fac775;color:#412402}
-.sub-cause{border-color:#fac775;background:#faeeda}
-.sub-cause .badge{background:#ffe4b0;color:#633806}
+.cause{border-color:#ef9f27;background:#faeeda}.cause .badge{background:#fac775;color:#412402}
+.sub-cause{border-color:#fac775;background:#faeeda}.sub-cause .badge{background:#ffe4b0;color:#633806}
 .hidden{display:none}
-.refs-panel{position:fixed;top:0;right:0;width:360px;height:100vh;background:var(--color-background-primary,#fff);border-left:1px solid var(--color-border-tertiary);padding:18px 16px;overflow-y:auto;z-index:100;transform:translateX(100%);transition:transform .3s;box-shadow:-4px 0 20px rgba(0,0,0,.08)}
+
+/* Referencias panel */
+.refs-panel{position:fixed;top:0;right:0;width:400px;height:100vh;background:var(--color-background-primary,#fff);border-left:1px solid var(--color-border-tertiary);padding:18px 16px 24px;overflow-y:auto;z-index:100;transform:translateX(100%);transition:transform .3s;box-shadow:-4px 0 18px rgba(0,0,0,.10)}
 .refs-panel.open{transform:translateX(0)}
-.refs-panel h3{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:12px;line-height:1.3}
-.refs-panel .close-btn{position:absolute;top:14px;right:14px;background:none;border:none;font-size:18px;cursor:pointer;color:var(--color-text-secondary);line-height:1}
-.ref-item{margin-bottom:14px;padding-bottom:14px;border-bottom:0.5px solid var(--color-border-tertiary)}
-.ref-item:last-child{border-bottom:none}
-.ref-item p{font-size:12px;color:var(--color-text-secondary);line-height:1.5;margin-bottom:5px}
-.ref-item a{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--color-text-info,#185fa5);text-decoration:none;padding:4px 9px;border:0.5px solid var(--color-border-info,#85b7eb);border-radius:6px;transition:background .15s}
+.refs-panel h3{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:14px;padding-right:24px;line-height:1.4}
+.refs-panel .close-btn{position:absolute;top:12px;right:12px;background:none;border:none;font-size:17px;cursor:pointer;color:var(--color-text-secondary)}
+.ref-section{margin-bottom:14px}
+.ref-section h4{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--color-text-secondary);margin-bottom:8px;padding:4px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.ref-item{margin-bottom:10px;padding-bottom:10px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.ref-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.ref-item p{font-size:11px;color:var(--color-text-secondary);line-height:1.5;margin-bottom:4px}
+.ref-item a{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:var(--color-text-info,#185fa5);text-decoration:none;padding:2px 7px;border:0.5px solid var(--color-border-info,#85b7eb);border-radius:5px}
 .ref-item a:hover{background:var(--color-background-info,#e6f1fb)}
-.refs-btn{position:fixed;bottom:18px;right:18px;z-index:99;background:#1d9e75;color:#fff;border:none;border-radius:22px;padding:10px 18px;font-size:13px;font-weight:500;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.15);transition:background .15s}
+.refs-btn{position:fixed;bottom:16px;right:16px;z-index:99;background:#1d9e75;color:#fff;border:none;border-radius:20px;padding:9px 16px;font-size:12.5px;font-weight:500;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.14)}
 .refs-btn:hover{background:#0f6e56}
 </style>
 
 <div class="legend">
-  <div class="legend-item"><div class="legend-dot ld-central"></div> Problema central</div>
-  <div class="legend-item"><div class="legend-dot ld-effect"></div> Efecto principal</div>
-  <div class="legend-item"><div class="legend-dot ld-sub-effect"></div> Sub-efecto</div>
-  <div class="legend-item"><div class="legend-dot ld-cause"></div> Causa principal</div>
-  <div class="legend-item"><div class="legend-dot ld-sub-cause"></div> Sub-causa</div>
-  <span style="font-size:11px;color:var(--color-text-secondary);margin-left:6px">▶ Haz clic en causas y efectos para expandir</span>
+  <div class="legend-item"><div class="legend-dot ld-ct"></div>Problema central</div>
+  <div class="legend-item"><div class="legend-dot ld-fx"></div>Efecto principal</div>
+  <div class="legend-item"><div class="legend-dot ld-sfx"></div>Sub-efecto</div>
+  <div class="legend-item"><div class="legend-dot ld-cx"></div>Causa principal</div>
+  <div class="legend-item"><div class="legend-dot ld-scx"></div>Sub-causa</div>
+  <span style="font-size:10.5px;color:var(--color-text-secondary);margin-left:6px">▶ Haz clic para expandir / contraer nodos</span>
 </div>
 
-<div class="wrap">
-<div class="canvas" id="canvas">
-<svg id="bg" viewBox="0 0 1640 1380" preserveAspectRatio="xMidYMid meet">
-  <path d="M590 255 C525 165,590 70,730 100 C740 30,865 25,920 120 C1040 65,1145 160,1050 275 C945 300,825 250,790 215 C715 260,640 285,590 255Z" fill="none" stroke="#5dcaa5" stroke-width="6" stroke-linecap="round" opacity=".35"/>
-  <path d="M740 325 C720 505,715 705,725 955 M865 325 C885 505,890 705,880 955" fill="none" stroke="#9c6b3f" stroke-width="10" stroke-linecap="round" opacity=".4"/>
-  <path d="M720 965 C760 980,845 980,890 965" fill="none" stroke="#9c6b3f" stroke-width="10" stroke-linecap="round" opacity=".4"/>
-</svg>
-<svg id="lines" viewBox="0 0 1640 1380" preserveAspectRatio="xMidYMid meet"></svg>
-</div>
-</div>
+<div class="wrap"><div class="canvas" id="canvas">
+<svg id="lines" viewBox="0 0 1900 1680" preserveAspectRatio="xMidYMid meet"></svg>
+</div></div>
 
-<button class="refs-btn" onclick="toggleRefs()">📚 Ver fuentes bibliográficas</button>
+<button class="refs-btn" onclick="toggleRefs()">Fuentes bibliográficas</button>
 
 <div class="refs-panel" id="refsPanel">
   <button class="close-btn" onclick="toggleRefs()">✕</button>
   <h3>Fuentes bibliográficas</h3>
-  <div class="ref-item">
-    <p>Infosalus (2019). Limitar el uso de las pantallas revierte la falta de sueño en los adolescentes.</p>
-    <a href="https://www.infosalus.com/salud-investigacion/noticia-limitar-uso-pantallas-revierte-falta-sueno-adolescentes-20190520074736.html" target="_blank">Abrir fuente ↗</a>
+
+  <div class="ref-section">
+    <h4>Sueño y uso del celular — estudios clave</h4>
+    <div class="ref-item">
+      <p>Izquierdo-Condoy, J. S. et al. (2025). Impact of Mobile Phone Usage on Sleep Quality Among Medical Students Across Latin America. <em>JMIR</em>. [Incluye Colombia]</p>
+      <a href="https://www.jmir.org/2025/1/e60630" target="_blank">Abrir en JMIR ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>Chu, Y. et al. (2023). Dose-response analysis of smartphone usage and self-reported sleep quality: meta-analysis (n=36,458). <em>Journal of Clinical Sleep Medicine.</em></p>
+      <a href="https://jcsm.aasm.org/doi/10.5664/jcsm.10392" target="_blank">Abrir en AASM ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>Tao et al. (2024). Smartphone dependence and sleep quality in college students. <em>Frontiers in Public Health.</em></p>
+      <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11446859/" target="_blank">Abrir en PubMed ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>Zhu, W. et al. (2024). Smartphone addiction and sleep quality among college students. <em>PLOS ONE.</em></p>
+      <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11280214/" target="_blank">Abrir en PubMed ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>Frontiers in Psychiatry (2025). Smartphone addiction, negative emotions and sleep disorder among college students.</p>
+      <a href="https://www.frontiersin.org/journals/psychiatry/articles/10.3389/fpsyt.2025.1542243/full" target="_blank">Abrir en Frontiers ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>Springer / Journal of Public Health (2023). Smartphone use at bedtime and sleep quality among medical students — Al-Azhar University, Cairo.</p>
+      <a href="https://link.springer.com/article/10.1007/s10389-023-01964-8" target="_blank">Abrir en Springer ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>ScienceDirect (2022). Bedtime smartphone use and academic performance: longitudinal analysis (n=6,093 students).</p>
+      <a href="https://www.sciencedirect.com/science/article/pii/S2666557322000386" target="_blank">Abrir en ScienceDirect ↗</a>
+    </div>
   </div>
-  <div class="ref-item">
-    <p>Infosalus (2016). El uso de dispositivos electrónicos antes de dormir afecta al sueño.</p>
-    <a href="https://www.infosalus.com/salud-investigacion/noticia-uso-dispositivos-electronicos-tablet-smartphone-antes-dormir-afecta-sueno-20161118125707.html" target="_blank">Abrir fuente ↗</a>
+
+  <div class="ref-section">
+    <h4>Luz azul, melatonina y ritmo circadiano</h4>
+    <div class="ref-item">
+      <p>Harvard Health Publishing (2024). Blue light has a dark side. Harvard Medical School.</p>
+      <a href="https://www.health.harvard.edu/staying-healthy/blue-light-has-a-dark-side" target="_blank">Abrir en Harvard ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>Alam, M. et al. (2024). Blue light from electronic devices: impacts on circadian rhythm and sleep in adolescents and young adults. <em>Chronobiology in Medicine.</em></p>
+      <a href="https://www.chronobiologyinmedicine.org/journal/view.php?number=167" target="_blank">Abrir en ChronoBiol Med ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>Lockley, S. W. et al. (2003). High sensitivity of the human circadian melatonin rhythm to resetting by short-wavelength light. <em>Journal of Clinical Endocrinology & Metabolism.</em></p>
+      <a href="https://pubmed.ncbi.nlm.nih.gov/12970330/" target="_blank">Abrir en PubMed ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>Chang, A. M. et al. (2015). Evening use of light-emitting eReaders negatively affects sleep, circadian timing, and next-morning alertness. <em>PNAS.</em></p>
+      <a href="https://www.pnas.org/doi/10.1073/pnas.1418490112" target="_blank">Abrir en PNAS ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>Sleep Foundation (2024). Blue light: what it is and how it affects sleep. [Basado en NLM/NIH]</p>
+      <a href="https://www.sleepfoundation.org/bedroom-environment/blue-light" target="_blank">Abrir en SleepFoundation ↗</a>
+    </div>
   </div>
-  <div class="ref-item">
-    <p>López, A. (2025). Una hora de pantallas después de acostarse aumenta el riesgo de insomnio en un 59 %. <em>El Tiempo.</em></p>
-    <a href="https://www.eltiempo.com/salud/una-hora-de-pantalla-despues-de-acostarse-aumenta-el-riesgo-de-insomnio-en-un-59-segun-la-ciencia-3440114" target="_blank">Abrir fuente ↗</a>
+
+  <div class="ref-section">
+    <h4>FOMO, redes sociales y bienestar</h4>
+    <div class="ref-item">
+      <p>Frontiers in Psychology (2025). FoMO, social media use, psychological well-being, and academic performance among university students.</p>
+      <a href="https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2025.1582572/full" target="_blank">Abrir en Frontiers ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>Servidio, R. et al. (2024). FoMO, social comparison, and problematic social media use. <em>PMC / PubMed Central.</em></p>
+      <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10943642/" target="_blank">Abrir en PubMed ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>Current Psychiatry Reports (2024). The impact of social media use on sleep and mental health in youth: scoping review.</p>
+      <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10948475/" target="_blank">Abrir en PubMed ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>Burgess, K. (2025). Decline in adolescents' mental health with rise of social media: narrative review. <em>SAGE Journals.</em></p>
+      <a href="https://journals.sagepub.com/doi/10.1177/10784535251328925" target="_blank">Abrir en SAGE ↗</a>
+    </div>
   </div>
-  <div class="ref-item">
-    <p>Deutsche Welle (2025). El uso de pantallas en la cama aumenta un 59 % el riesgo de insomnio.</p>
-    <a href="https://www.dw.com/es/el-uso-de-pantallas-en-la-cama-aumenta-un-59-el-riesgo-de-insomnio/a-72098064" target="_blank">Abrir fuente ↗</a>
-  </div>
-  <div class="ref-item">
-    <p>Woods, H. C., & Scott, H. (2016). #Sleepyteens: Social media use in adolescence is associated with poor sleep quality, anxiety, depression and low self-esteem. <em>Journal of Adolescence.</em></p>
-    <a href="https://pubmed.ncbi.nlm.nih.gov/27294324/" target="_blank">Abrir en PubMed ↗</a>
-  </div>
-  <div class="ref-item">
-    <p>Jamieson, D. et al. (2025). Effects of sleep deprivation on the mental health of adolescents: a systematic review. <em>Sleep Science and Practice.</em></p>
-    <a href="https://sleep.biomedcentral.com/articles/10.1186/s41606-025-00127-w" target="_blank">Abrir fuente ↗</a>
+
+  <div class="ref-section">
+    <h4>Fuentes originales del árbol</h4>
+    <div class="ref-item">
+      <p>Woods, H. C., & Scott, H. (2016). #Sleepyteens: Social media use in adolescence is associated with poor sleep quality, anxiety, depression and low self-esteem. <em>Journal of Adolescence.</em></p>
+      <a href="https://pubmed.ncbi.nlm.nih.gov/27294324/" target="_blank">Abrir en PubMed ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>Jamieson, D. et al. (2025). Effects of sleep deprivation on mental health of adolescents: systematic review. <em>Sleep Science and Practice.</em></p>
+      <a href="https://sleep.biomedcentral.com/articles/10.1186/s41606-025-00127-w" target="_blank">Abrir en BioMedCentral ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>López, A. (2025). Una hora de pantallas después de acostarse aumenta el riesgo de insomnio en 59%. <em>El Tiempo.</em></p>
+      <a href="https://www.eltiempo.com/salud/una-hora-de-pantalla-despues-de-acostarse-aumenta-el-riesgo-de-insomnio-en-un-59-segun-la-ciencia-3440114" target="_blank">Abrir en El Tiempo ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>Deutsche Welle (2025). El uso de pantallas en la cama aumenta un 59% el riesgo de insomnio.</p>
+      <a href="https://www.dw.com/es/el-uso-de-pantallas-en-la-cama-aumenta-un-59-el-riesgo-de-insomnio/a-72098064" target="_blank">Abrir en DW ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>Infosalus (2019). Limitar el uso de pantallas revierte la falta de sueño en adolescentes.</p>
+      <a href="https://www.infosalus.com/salud-investigacion/noticia-limitar-uso-pantallas-revierte-falta-sueno-adolescentes-20190520074736.html" target="_blank">Abrir en Infosalus ↗</a>
+    </div>
+    <div class="ref-item">
+      <p>Infosalus (2016). El uso de dispositivos electrónicos antes de dormir afecta al sueño.</p>
+      <a href="https://www.infosalus.com/salud-investigacion/noticia-uso-dispositivos-electronicos-tablet-smartphone-antes-dormir-afecta-sueno-20161118125707.html" target="_blank">Abrir en Infosalus ↗</a>
+    </div>
   </div>
 </div>
 
 <script>
 const NODES=[
-  {id:"e1",cls:"effect",x:80,y:90,badge:"Efecto",title:"Reducción de la duración y calidad del sueño",ref:"Infosalus, 2016; López, 2025; DW, 2025",hint:"Expandir",expandable:true},
-  {id:"e2",cls:"effect",x:690,y:55,badge:"Efecto",title:"Alteraciones en el estado de ánimo y funciones cognitivas",ref:"Woods & Scott, 2016; Jamieson et al., 2025",hint:"Expandir",expandable:true},
-  {id:"e3",cls:"effect",x:1290,y:90,badge:"Efecto",title:"Deterioro del rendimiento académico y bienestar general",ref:"Jamieson et al., 2025; Infosalus, 2019",hint:"Expandir",expandable:true},
-  {id:"central",cls:"central",x:620,y:560,badge:"Problema central",title:"Alteración de los hábitos del sueño por el uso nocturno prolongado del celular en estudiantes universitarios de 18–22 años de Cali, Colombia"},
-  {id:"c1",cls:"cause",x:55,y:970,badge:"Causa",title:"Cultura de hiperconexión y normalización del uso nocturno",ref:"Woods & Scott, 2016; Jamieson et al., 2025",hint:"Expandir",expandable:true},
-  {id:"c2",cls:"cause",x:455,y:920,badge:"Causa",title:"Diseño adictivo y persuasivo de las aplicaciones digitales",ref:"Infosalus, 2016; López, 2025",hint:"Expandir",expandable:true},
-  {id:"c3",cls:"cause",x:880,y:920,badge:"Causa",title:"Déficit de educación sobre higiene del sueño",ref:"Infosalus, 2016; DW, 2025",hint:"Expandir",expandable:true},
-  {id:"c4",cls:"cause",x:1295,y:970,badge:"Causa",title:"Presión académica y uso intensivo nocturno del celular",ref:"Jamieson et al., 2025; Infosalus, 2019",hint:"Expandir",expandable:true},
-  {id:"e1a",cls:"sub-effect",x:15,y:315,badge:"Sub-efecto",title:"Dificultad para conciliar el sueño y despertares frecuentes",ref:"López, 2025; DW, 2025",parent:"e1",hidden:true},
-  {id:"e1b",cls:"sub-effect",x:185,y:415,badge:"Sub-efecto",title:"Cansancio crónico y disminución de la concentración diurna",ref:"Infosalus, 2019; Jamieson et al., 2025",parent:"e1",hidden:true},
-  {id:"e2a",cls:"sub-effect",x:595,y:280,badge:"Sub-efecto",title:"Irritabilidad, ansiedad y síntomas depresivos",ref:"Woods & Scott, 2016; Jamieson et al., 2025",parent:"e2",hidden:true},
-  {id:"e2b",cls:"sub-effect",x:775,y:380,badge:"Sub-efecto",title:"Deterioro de la memoria y funciones ejecutivas",ref:"Jamieson et al., 2025",parent:"e2",hidden:true},
-  {id:"e3a",cls:"sub-effect",x:1175,y:315,badge:"Sub-efecto",title:"Bajo rendimiento académico y riesgo de reprobación",ref:"Jamieson et al., 2025; Infosalus, 2019",parent:"e3",hidden:true},
-  {id:"e3b",cls:"sub-effect",x:1355,y:415,badge:"Sub-efecto",title:"Dificultades en relaciones sociales y desarrollo personal",ref:"Woods & Scott, 2016; Jamieson et al., 2025",parent:"e3",hidden:true},
-  {id:"c1a",cls:"sub-cause",x:15,y:1175,badge:"Sub-causa",title:"Miedo a perderse eventos (FOMO) y presión social",ref:"Woods & Scott, 2016",parent:"c1",hidden:true},
-  {id:"c1b",cls:"sub-cause",x:185,y:1285,badge:"Sub-causa",title:"Celular como principal herramienta de entretenimiento nocturno",ref:"Infosalus, 2016",parent:"c1",hidden:true},
-  {id:"c2a",cls:"sub-cause",x:425,y:1140,badge:"Sub-causa",title:"Notificaciones constantes y scroll infinito",ref:"López, 2025; DW, 2025",parent:"c2",hidden:true},
-  {id:"c2b",cls:"sub-cause",x:595,y:1250,badge:"Sub-causa",title:"Recompensas dopaminérgicas (likes, vistas, mensajes)",ref:"Infosalus, 2016",parent:"c2",hidden:true},
-  {id:"c3a",cls:"sub-cause",x:865,y:1140,badge:"Sub-causa",title:"Desconocimiento del impacto de la luz azul en la melatonina",ref:"Infosalus, 2016; DW, 2025",parent:"c3",hidden:true},
-  {id:"c3b",cls:"sub-cause",x:1030,y:1250,badge:"Sub-causa",title:"Ausencia de rutinas de desconexión digital antes de dormir",ref:"Infosalus, 2019; López, 2025",parent:"c3",hidden:true},
-  {id:"c4a",cls:"sub-cause",x:1260,y:1175,badge:"Sub-causa",title:"Entrega de trabajos y estudio de última hora",ref:"Jamieson et al., 2025",parent:"c4",hidden:true},
-  {id:"c4b",cls:"sub-cause",x:1410,y:1285,badge:"Sub-causa",title:"Dependencia de plataformas educativas en horario nocturno",ref:"Infosalus, 2019",parent:"c4",hidden:true}
+  {id:"e1",cls:"effect",x:30, y:80, badge:"Efecto",title:"Reducción de la duración y calidad del sueño",ref:"Chu et al., 2023 (JCSM); Izquierdo-Condoy et al., 2025 (JMIR)",hint:"Expandir",expandable:true},
+  {id:"e2",cls:"effect",x:305,y:40, badge:"Efecto",title:"Alteraciones en el estado de ánimo y funciones cognitivas",ref:"Woods & Scott, 2016; Jamieson et al., 2025; Frontiers Psychiatry, 2025",hint:"Expandir",expandable:true},
+  {id:"e3",cls:"effect",x:740,y:30, badge:"Efecto",title:"Deterioro del rendimiento académico y bienestar general",ref:"ScienceDirect, 2022; Jamieson et al., 2025; Springer, 2023",hint:"Expandir",expandable:true},
+  {id:"e4",cls:"effect",x:1165,y:40,badge:"Efecto",title:"Impacto en la salud física y peso corporal",ref:"Jamieson et al., 2025; Chu et al., 2023 (JCSM)",hint:"Expandir",expandable:true},
+  {id:"e5",cls:"effect",x:1485,y:80,badge:"Efecto",title:"Deterioro de las relaciones sociales y familiares",ref:"Woods & Scott, 2016; Frontiers Psychology, 2025",hint:"Expandir",expandable:true},
+
+  {id:"central",cls:"central",x:730,y:660,badge:"Problema central",title:"Alteración de los hábitos del sueño por el uso nocturno prolongado del celular en estudiantes universitarios de 18–22 años de Cali, Colombia"},
+
+  {id:"c1",cls:"cause",x:30, y:1060,badge:"Causa",title:"Cultura de hiperconexión y normalización del uso nocturno",ref:"Curr. Psychiatry Rep., 2024; Burgess, 2025 (SAGE)",hint:"Expandir",expandable:true},
+  {id:"c2",cls:"cause",x:340,y:1030,badge:"Causa",title:"Diseño adictivo y persuasivo de las aplicaciones digitales",ref:"Tao et al., 2024 (Frontiers); Zhu et al., 2024 (PLOS ONE)",hint:"Expandir",expandable:true},
+  {id:"c3",cls:"cause",x:740,y:1010,badge:"Causa",title:"Déficit de educación sobre higiene del sueño",ref:"Alam et al., 2024 (ChronoBiol Med); Harvard Health, 2024",hint:"Expandir",expandable:true},
+  {id:"c4",cls:"cause",x:1115,y:1030,badge:"Causa",title:"Presión académica e intensivo uso nocturno del celular",ref:"ScienceDirect, 2022; Jamieson et al., 2025; Springer, 2023",hint:"Expandir",expandable:true},
+  {id:"c5",cls:"cause",x:1480,y:1060,badge:"Causa",title:"Factores ambientales y ausencia de rutinas saludables",ref:"Chang et al., 2015 (PNAS); Sleep Foundation, 2024",hint:"Expandir",expandable:true},
+
+  // Sub-efectos E1
+  {id:"e1a",cls:"sub-effect",x:0,  y:310,badge:"Sub-efecto",title:"Dificultad para conciliar el sueño y despertares frecuentes",ref:"Chu et al., 2023 (JCSM meta-análisis n=36,458)",parent:"e1",hidden:true},
+  {id:"e1b",cls:"sub-effect",x:155,y:420,badge:"Sub-efecto",title:"Cansancio crónico y somnolencia diurna",ref:"Jamieson et al., 2025; Tao et al., 2024 (Frontiers)",parent:"e1",hidden:true},
+  {id:"e1c",cls:"sub-effect",x:0,  y:530,badge:"Sub-efecto",title:"Reducción del sueño REM y ciclos reparadores",ref:"Chang et al., 2015 (PNAS); Alam et al., 2024",parent:"e1",hidden:true},
+  {id:"e1d",cls:"sub-effect",x:155,y:615,badge:"Sub-efecto",title:"Aumento del tiempo de latencia del sueño",ref:"Chu et al., 2023 (JCSM); Lockley et al., 2003 (JCEM)",parent:"e1",hidden:true},
+
+  // Sub-efectos E2
+  {id:"e2a",cls:"sub-effect",x:255,y:295,badge:"Sub-efecto",title:"Irritabilidad, ansiedad y síntomas depresivos",ref:"Woods & Scott, 2016 (J. Adolescence); Burgess, 2025 (SAGE)",parent:"e2",hidden:true},
+  {id:"e2b",cls:"sub-effect",x:410,y:390,badge:"Sub-efecto",title:"Deterioro de memoria y funciones ejecutivas",ref:"Jamieson et al., 2025; Frontiers Psychiatry, 2025",parent:"e2",hidden:true},
+  {id:"e2c",cls:"sub-effect",x:255,y:490,badge:"Sub-efecto",title:"Dificultad de concentración y atención sostenida",ref:"Springer, 2023; Zhu et al., 2024 (PLOS ONE)",parent:"e2",hidden:true},
+  {id:"e2d",cls:"sub-effect",x:410,y:580,badge:"Sub-efecto",title:"Mayor impulsividad y baja autorregulación emocional",ref:"Frontiers Psychiatry, 2025; Woods & Scott, 2016",parent:"e2",hidden:true},
+
+  // Sub-efectos E3
+  {id:"e3a",cls:"sub-effect",x:650,y:270,badge:"Sub-efecto",title:"Bajo rendimiento académico y riesgo de reprobación",ref:"ScienceDirect, 2022 (n=6,093); Springer, 2023",parent:"e3",hidden:true},
+  {id:"e3b",cls:"sub-effect",x:855,y:370,badge:"Sub-efecto",title:"Menor creatividad y capacidad de resolución de problemas",ref:"Jamieson et al., 2025; Frontiers Psychiatry, 2025",parent:"e3",hidden:true},
+  {id:"e3c",cls:"sub-effect",x:650,y:470,badge:"Sub-efecto",title:"Ausentismo y tardanzas en clases matutinas",ref:"Springer, 2023; Infosalus, 2019",parent:"e3",hidden:true},
+  {id:"e3d",cls:"sub-effect",x:855,y:565,badge:"Sub-efecto",title:"Disminución de la motivación académica intrínseca",ref:"Frontiers Psychology, 2025; Jamieson et al., 2025",parent:"e3",hidden:true},
+
+  // Sub-efectos E4
+  {id:"e4a",cls:"sub-effect",x:1095,y:280,badge:"Sub-efecto",title:"Alteraciones metabólicas y riesgo de sobrepeso",ref:"Jamieson et al., 2025; Chu et al., 2023 (JCSM)",parent:"e4",hidden:true},
+  {id:"e4b",cls:"sub-effect",x:1290,y:375,badge:"Sub-efecto",title:"Debilitamiento del sistema inmunológico",ref:"Jamieson et al., 2025; Harvard Health, 2024",parent:"e4",hidden:true},
+  {id:"e4c",cls:"sub-effect",x:1095,y:470,badge:"Sub-efecto",title:"Cefaleas y problemas de visión por luz azul",ref:"Alam et al., 2024 (ChronoBiol Med); Harvard Health, 2024",parent:"e4",hidden:true},
+  {id:"e4d",cls:"sub-effect",x:1290,y:560,badge:"Sub-efecto",title:"Tensión muscular y postura inadecuada al usar el celular",ref:"Springer, 2023; DW, 2025",parent:"e4",hidden:true},
+
+  // Sub-efectos E5
+  {id:"e5a",cls:"sub-effect",x:1480,y:300,badge:"Sub-efecto",title:"Aislamiento social y dificultad para vínculos presenciales",ref:"Curr. Psychiatry Rep., 2024; Woods & Scott, 2016",parent:"e5",hidden:true},
+  {id:"e5b",cls:"sub-effect",x:1680,y:400,badge:"Sub-efecto",title:"Conflictos familiares por el uso excesivo del celular",ref:"Burgess, 2025 (SAGE); Jamieson et al., 2025",parent:"e5",hidden:true},
+  {id:"e5c",cls:"sub-effect",x:1480,y:510,badge:"Sub-efecto",title:"Dependencia emocional de la validación digital",ref:"Frontiers Psychology, 2025 (FoMO); Servidio et al., 2024",parent:"e5",hidden:true},
+
+  // Sub-causas C1
+  {id:"c1a",cls:"sub-cause",x:0,  y:1280,badge:"Sub-causa",title:"FOMO y presión social para estar siempre conectado",ref:"Frontiers Psychology, 2025; Servidio et al., 2024 (PMC)",parent:"c1",hidden:true},
+  {id:"c1b",cls:"sub-cause",x:160,y:1380,badge:"Sub-causa",title:"Celular como principal herramienta de entretenimiento nocturno",ref:"Curr. Psychiatry Rep., 2024; Infosalus, 2016",parent:"c1",hidden:true},
+  {id:"c1c",cls:"sub-cause",x:0,  y:1475,badge:"Sub-causa",title:"Normalización social de revisar el celular antes de dormir",ref:"Izquierdo-Condoy et al., 2025 (JMIR-Latam); DW, 2025",parent:"c1",hidden:true},
+  {id:"c1d",cls:"sub-cause",x:160,y:1560,badge:"Sub-causa",title:"Influencia de pares y redes en hábitos nocturnos",ref:"Woods & Scott, 2016; Burgess, 2025 (SAGE)",parent:"c1",hidden:true},
+
+  // Sub-causas C2
+  {id:"c2a",cls:"sub-cause",x:310,y:1265,badge:"Sub-causa",title:"Notificaciones constantes y scroll infinito",ref:"Tao et al., 2024 (Frontiers); López, 2025 (El Tiempo)",parent:"c2",hidden:true},
+  {id:"c2b",cls:"sub-cause",x:475,y:1360,badge:"Sub-causa",title:"Recompensas dopaminérgicas (likes, vistas, mensajes)",ref:"Zhu et al., 2024 (PLOS ONE); Infosalus, 2016",parent:"c2",hidden:true},
+  {id:"c2c",cls:"sub-cause",x:310,y:1455,badge:"Sub-causa",title:"Algoritmos que prolongan el tiempo en pantalla",ref:"Frontiers Psychiatry, 2025; López, 2025 (El Tiempo)",parent:"c2",hidden:true},
+  {id:"c2d",cls:"sub-cause",x:475,y:1545,badge:"Sub-causa",title:"Autoplay automático de videos y contenidos cortos",ref:"Tao et al., 2024; Curr. Psychiatry Rep., 2024",parent:"c2",hidden:true},
+
+  // Sub-causas C3
+  {id:"c3a",cls:"sub-cause",x:660,y:1240,badge:"Sub-causa",title:"Desconocimiento del impacto de la luz azul en la melatonina",ref:"Harvard Health, 2024; Chang et al., 2015 (PNAS)",parent:"c3",hidden:true},
+  {id:"c3b",cls:"sub-cause",x:855,y:1335,badge:"Sub-causa",title:"Ausencia de rutinas de desconexión digital antes de dormir",ref:"Alam et al., 2024; Sleep Foundation, 2024",parent:"c3",hidden:true},
+  {id:"c3c",cls:"sub-cause",x:660,y:1430,badge:"Sub-causa",title:"Falta de orientación universitaria en salud del sueño",ref:"Jamieson et al., 2025; Izquierdo-Condoy et al., 2025",parent:"c3",hidden:true},
+  {id:"c3d",cls:"sub-cause",x:855,y:1520,badge:"Sub-causa",title:"Escasa integración de la higiene del sueño en el currículo",ref:"Alam et al., 2024 (ChronoBiol Med); Jamieson et al., 2025",parent:"c3",hidden:true},
+
+  // Sub-causas C4
+  {id:"c4a",cls:"sub-cause",x:1040,y:1260,badge:"Sub-causa",title:"Entrega de trabajos y estudio de última hora",ref:"ScienceDirect, 2022 (longitudinal); Jamieson et al., 2025",parent:"c4",hidden:true},
+  {id:"c4b",cls:"sub-cause",x:1235,y:1355,badge:"Sub-causa",title:"Dependencia de plataformas educativas en horario nocturno",ref:"Springer, 2023; Infosalus, 2019",parent:"c4",hidden:true},
+  {id:"c4c",cls:"sub-cause",x:1040,y:1450,badge:"Sub-causa",title:"Estrés académico que dificulta la desconexión nocturna",ref:"Frontiers Psychology, 2025; Jamieson et al., 2025",parent:"c4",hidden:true},
+  {id:"c4d",cls:"sub-cause",x:1235,y:1540,badge:"Sub-causa",title:"Grupos de WhatsApp para coordinación académica nocturna",ref:"Curr. Psychiatry Rep., 2024; Woods & Scott, 2016",parent:"c4",hidden:true},
+
+  // Sub-causas C5
+  {id:"c5a",cls:"sub-cause",x:1475,y:1280,badge:"Sub-causa",title:"Espacios físicos poco propicios para el descanso",ref:"Sleep Foundation, 2024; Infosalus, 2019",parent:"c5",hidden:true},
+  {id:"c5b",cls:"sub-cause",x:1665,y:1375,badge:"Sub-causa",title:"Falta de horarios regulares y rutinas nocturnas estables",ref:"Chang et al., 2015 (PNAS); Alam et al., 2024",parent:"c5",hidden:true},
+  {id:"c5c",cls:"sub-cause",x:1475,y:1475,badge:"Sub-causa",title:"Consumo de cafeína y alimentos estimulantes en la noche",ref:"Harvard Health, 2024; Infosalus, 2016",parent:"c5",hidden:true},
 ];
 
 const canvas=document.getElementById("canvas");
@@ -133,7 +252,7 @@ NODES.forEach(n=>{
   d.className="node "+n.cls+(n.hidden?" hidden":"");
   d.style.left=n.x+"px";
   d.style.top=n.y+"px";
-  if(n.id==="central"){d.style.width="400px";}
+  if(n.id==="central"){d.style.width="420px";}
   let html=`<div class="badge">${n.badge}</div><div class="t">${n.title}</div>`;
   if(n.ref)html+=`<div class="r">${n.ref}</div>`;
   if(n.hint)html+=`<div class="hint">${n.hint}</div>`;
@@ -155,27 +274,22 @@ NODES.forEach(n=>{
 
 function cTop(el){return{x:el.offsetLeft+el.offsetWidth/2,y:el.offsetTop};}
 function cBot(el){return{x:el.offsetLeft+el.offsetWidth/2,y:el.offsetTop+el.offsetHeight};}
-
 function curve(x1,y1,x2,y2,col,w){
-  const dy=Math.abs(y2-y1),c=Math.max(60,dy*0.32);
+  const dy=Math.abs(y2-y1),c=Math.max(50,dy*0.30);
   const p=document.createElementNS("http://www.w3.org/2000/svg","path");
   p.setAttribute("d",`M${x1} ${y1}C${x1} ${y1+c},${x2} ${y2-c},${x2} ${y2}`);
-  p.setAttribute("fill","none");
-  p.setAttribute("stroke",col);
-  p.setAttribute("stroke-width",w);
-  p.setAttribute("stroke-linecap","round");
-  p.setAttribute("opacity","0.85");
-  svg.appendChild(p);
+  p.setAttribute("fill","none");p.setAttribute("stroke",col);
+  p.setAttribute("stroke-width",w);p.setAttribute("stroke-linecap","round");
+  p.setAttribute("opacity","0.82");svg.appendChild(p);
 }
-
 function draw(){
   svg.innerHTML="";
-  ["e1","e2","e3"].forEach(id=>{
+  ["e1","e2","e3","e4","e5"].forEach(id=>{
     const f=document.getElementById(id),t=document.getElementById("central");
     if(!f||!t)return;
     const a=cBot(f),b=cTop(t);curve(a.x,a.y,b.x,b.y,"#378add",4);
   });
-  ["c1","c2","c3","c4"].forEach(id=>{
+  ["c1","c2","c3","c4","c5"].forEach(id=>{
     const f=document.getElementById("central"),t=document.getElementById(id);
     if(!f||!t)return;
     const a=cBot(f),b=cTop(t);curve(a.x,a.y,b.x,b.y,"#ef9f27",4);
@@ -184,14 +298,10 @@ function draw(){
     const f=document.getElementById(n.parent),t=document.getElementById(n.id);
     if(!f||!t)return;
     const col=n.cls.startsWith("sub-effect")?"#85b7eb":"#fac775";
-    const a=cBot(f),b=cTop(t);curve(a.x,a.y,b.x,b.y,col,2.5);
+    const a=cBot(f),b=cTop(t);curve(a.x,a.y,b.x,b.y,col,2.2);
   });
 }
-
 draw();
 window.addEventListener("resize",draw);
-
-function toggleRefs(){
-  document.getElementById("refsPanel").classList.toggle("open");
-}
+function toggleRefs(){document.getElementById("refsPanel").classList.toggle("open");}
 </script>
