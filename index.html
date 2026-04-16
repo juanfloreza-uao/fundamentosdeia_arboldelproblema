@@ -1,0 +1,197 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans,sans-serif)}
+.wrap{width:100%;overflow-x:auto;padding:12px 0 24px;background:transparent}
+.canvas{position:relative;width:1640px;height:1380px;margin:0 auto}
+svg#bg,svg#lines{position:absolute;inset:0;width:1640px;height:1380px;pointer-events:none}
+svg#bg{z-index:0}svg#lines{z-index:2}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin:0 0 14px 16px;align-items:center}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-text-secondary)}
+.legend-dot{width:14px;height:14px;border-radius:4px;border:2px solid}
+.ld-effect{background:#e6f1fb;border-color:#378add}
+.ld-cause{background:#faeeda;border-color:#ef9f27}
+.ld-sub-effect{background:#e6f1fb;border-color:#85b7eb}
+.ld-sub-cause{background:#faeeda;border-color:#fac775}
+.ld-central{background:#e1f5ee;border-color:#1d9e75}
+.node{position:absolute;z-index:3;width:232px;min-height:72px;border-radius:14px;padding:11px 13px;cursor:pointer;border:2px solid;transition:transform .15s,box-shadow .15s}
+.node:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.12)}
+.node .badge{display:inline-block;font-size:9.5px;font-weight:600;letter-spacing:.04em;padding:2px 7px;border-radius:20px;margin-bottom:5px;text-transform:uppercase}
+.node .t{font-size:13.5px;font-weight:500;line-height:1.3;color:var(--color-text-primary)}
+.node .r{margin-top:5px;font-size:10px;color:var(--color-text-secondary);font-style:italic;line-height:1.4}
+.node .hint{margin-top:5px;font-size:10px;color:var(--color-text-secondary);display:flex;align-items:center;gap:4px}
+.node .hint::before{content:"▶";font-size:8px}
+.effect{border-color:#378add;background:#e6f1fb}
+.effect .badge{background:#d0e8f9;color:#0c447c}
+.sub-effect{border-color:#85b7eb;background:#e6f1fb}
+.sub-effect .badge{background:#d0e8f9;color:#185fa5}
+.central{width:400px;min-height:120px;border-color:#1d9e75;background:#e1f5ee;border-width:3px;z-index:4}
+.central .t{font-size:14px;color:#085041;line-height:1.4}
+.central .badge{background:#9fe1cb;color:#04342c}
+.cause{border-color:#ef9f27;background:#faeeda}
+.cause .badge{background:#fac775;color:#412402}
+.sub-cause{border-color:#fac775;background:#faeeda}
+.sub-cause .badge{background:#ffe4b0;color:#633806}
+.hidden{display:none}
+.refs-panel{position:fixed;top:0;right:0;width:360px;height:100vh;background:var(--color-background-primary,#fff);border-left:1px solid var(--color-border-tertiary);padding:18px 16px;overflow-y:auto;z-index:100;transform:translateX(100%);transition:transform .3s;box-shadow:-4px 0 20px rgba(0,0,0,.08)}
+.refs-panel.open{transform:translateX(0)}
+.refs-panel h3{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:12px;line-height:1.3}
+.refs-panel .close-btn{position:absolute;top:14px;right:14px;background:none;border:none;font-size:18px;cursor:pointer;color:var(--color-text-secondary);line-height:1}
+.ref-item{margin-bottom:14px;padding-bottom:14px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.ref-item:last-child{border-bottom:none}
+.ref-item p{font-size:12px;color:var(--color-text-secondary);line-height:1.5;margin-bottom:5px}
+.ref-item a{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--color-text-info,#185fa5);text-decoration:none;padding:4px 9px;border:0.5px solid var(--color-border-info,#85b7eb);border-radius:6px;transition:background .15s}
+.ref-item a:hover{background:var(--color-background-info,#e6f1fb)}
+.refs-btn{position:fixed;bottom:18px;right:18px;z-index:99;background:#1d9e75;color:#fff;border:none;border-radius:22px;padding:10px 18px;font-size:13px;font-weight:500;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.15);transition:background .15s}
+.refs-btn:hover{background:#0f6e56}
+</style>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot ld-central"></div> Problema central</div>
+  <div class="legend-item"><div class="legend-dot ld-effect"></div> Efecto principal</div>
+  <div class="legend-item"><div class="legend-dot ld-sub-effect"></div> Sub-efecto</div>
+  <div class="legend-item"><div class="legend-dot ld-cause"></div> Causa principal</div>
+  <div class="legend-item"><div class="legend-dot ld-sub-cause"></div> Sub-causa</div>
+  <span style="font-size:11px;color:var(--color-text-secondary);margin-left:6px">▶ Haz clic en causas y efectos para expandir</span>
+</div>
+
+<div class="wrap">
+<div class="canvas" id="canvas">
+<svg id="bg" viewBox="0 0 1640 1380" preserveAspectRatio="xMidYMid meet">
+  <path d="M590 255 C525 165,590 70,730 100 C740 30,865 25,920 120 C1040 65,1145 160,1050 275 C945 300,825 250,790 215 C715 260,640 285,590 255Z" fill="none" stroke="#5dcaa5" stroke-width="6" stroke-linecap="round" opacity=".35"/>
+  <path d="M740 325 C720 505,715 705,725 955 M865 325 C885 505,890 705,880 955" fill="none" stroke="#9c6b3f" stroke-width="10" stroke-linecap="round" opacity=".4"/>
+  <path d="M720 965 C760 980,845 980,890 965" fill="none" stroke="#9c6b3f" stroke-width="10" stroke-linecap="round" opacity=".4"/>
+</svg>
+<svg id="lines" viewBox="0 0 1640 1380" preserveAspectRatio="xMidYMid meet"></svg>
+</div>
+</div>
+
+<button class="refs-btn" onclick="toggleRefs()">📚 Ver fuentes bibliográficas</button>
+
+<div class="refs-panel" id="refsPanel">
+  <button class="close-btn" onclick="toggleRefs()">✕</button>
+  <h3>Fuentes bibliográficas</h3>
+  <div class="ref-item">
+    <p>Infosalus (2019). Limitar el uso de las pantallas revierte la falta de sueño en los adolescentes.</p>
+    <a href="https://www.infosalus.com/salud-investigacion/noticia-limitar-uso-pantallas-revierte-falta-sueno-adolescentes-20190520074736.html" target="_blank">Abrir fuente ↗</a>
+  </div>
+  <div class="ref-item">
+    <p>Infosalus (2016). El uso de dispositivos electrónicos antes de dormir afecta al sueño.</p>
+    <a href="https://www.infosalus.com/salud-investigacion/noticia-uso-dispositivos-electronicos-tablet-smartphone-antes-dormir-afecta-sueno-20161118125707.html" target="_blank">Abrir fuente ↗</a>
+  </div>
+  <div class="ref-item">
+    <p>López, A. (2025). Una hora de pantallas después de acostarse aumenta el riesgo de insomnio en un 59 %. <em>El Tiempo.</em></p>
+    <a href="https://www.eltiempo.com/salud/una-hora-de-pantalla-despues-de-acostarse-aumenta-el-riesgo-de-insomnio-en-un-59-segun-la-ciencia-3440114" target="_blank">Abrir fuente ↗</a>
+  </div>
+  <div class="ref-item">
+    <p>Deutsche Welle (2025). El uso de pantallas en la cama aumenta un 59 % el riesgo de insomnio.</p>
+    <a href="https://www.dw.com/es/el-uso-de-pantallas-en-la-cama-aumenta-un-59-el-riesgo-de-insomnio/a-72098064" target="_blank">Abrir fuente ↗</a>
+  </div>
+  <div class="ref-item">
+    <p>Woods, H. C., & Scott, H. (2016). #Sleepyteens: Social media use in adolescence is associated with poor sleep quality, anxiety, depression and low self-esteem. <em>Journal of Adolescence.</em></p>
+    <a href="https://pubmed.ncbi.nlm.nih.gov/27294324/" target="_blank">Abrir en PubMed ↗</a>
+  </div>
+  <div class="ref-item">
+    <p>Jamieson, D. et al. (2025). Effects of sleep deprivation on the mental health of adolescents: a systematic review. <em>Sleep Science and Practice.</em></p>
+    <a href="https://sleep.biomedcentral.com/articles/10.1186/s41606-025-00127-w" target="_blank">Abrir fuente ↗</a>
+  </div>
+</div>
+
+<script>
+const NODES=[
+  {id:"e1",cls:"effect",x:80,y:90,badge:"Efecto",title:"Reducción de la duración y calidad del sueño",ref:"Infosalus, 2016; López, 2025; DW, 2025",hint:"Expandir",expandable:true},
+  {id:"e2",cls:"effect",x:690,y:55,badge:"Efecto",title:"Alteraciones en el estado de ánimo y funciones cognitivas",ref:"Woods & Scott, 2016; Jamieson et al., 2025",hint:"Expandir",expandable:true},
+  {id:"e3",cls:"effect",x:1290,y:90,badge:"Efecto",title:"Deterioro del rendimiento académico y bienestar general",ref:"Jamieson et al., 2025; Infosalus, 2019",hint:"Expandir",expandable:true},
+  {id:"central",cls:"central",x:620,y:560,badge:"Problema central",title:"Alteración de los hábitos del sueño por el uso nocturno prolongado del celular en estudiantes universitarios de 18–22 años de Cali, Colombia"},
+  {id:"c1",cls:"cause",x:55,y:970,badge:"Causa",title:"Cultura de hiperconexión y normalización del uso nocturno",ref:"Woods & Scott, 2016; Jamieson et al., 2025",hint:"Expandir",expandable:true},
+  {id:"c2",cls:"cause",x:455,y:920,badge:"Causa",title:"Diseño adictivo y persuasivo de las aplicaciones digitales",ref:"Infosalus, 2016; López, 2025",hint:"Expandir",expandable:true},
+  {id:"c3",cls:"cause",x:880,y:920,badge:"Causa",title:"Déficit de educación sobre higiene del sueño",ref:"Infosalus, 2016; DW, 2025",hint:"Expandir",expandable:true},
+  {id:"c4",cls:"cause",x:1295,y:970,badge:"Causa",title:"Presión académica y uso intensivo nocturno del celular",ref:"Jamieson et al., 2025; Infosalus, 2019",hint:"Expandir",expandable:true},
+  {id:"e1a",cls:"sub-effect",x:15,y:315,badge:"Sub-efecto",title:"Dificultad para conciliar el sueño y despertares frecuentes",ref:"López, 2025; DW, 2025",parent:"e1",hidden:true},
+  {id:"e1b",cls:"sub-effect",x:185,y:415,badge:"Sub-efecto",title:"Cansancio crónico y disminución de la concentración diurna",ref:"Infosalus, 2019; Jamieson et al., 2025",parent:"e1",hidden:true},
+  {id:"e2a",cls:"sub-effect",x:595,y:280,badge:"Sub-efecto",title:"Irritabilidad, ansiedad y síntomas depresivos",ref:"Woods & Scott, 2016; Jamieson et al., 2025",parent:"e2",hidden:true},
+  {id:"e2b",cls:"sub-effect",x:775,y:380,badge:"Sub-efecto",title:"Deterioro de la memoria y funciones ejecutivas",ref:"Jamieson et al., 2025",parent:"e2",hidden:true},
+  {id:"e3a",cls:"sub-effect",x:1175,y:315,badge:"Sub-efecto",title:"Bajo rendimiento académico y riesgo de reprobación",ref:"Jamieson et al., 2025; Infosalus, 2019",parent:"e3",hidden:true},
+  {id:"e3b",cls:"sub-effect",x:1355,y:415,badge:"Sub-efecto",title:"Dificultades en relaciones sociales y desarrollo personal",ref:"Woods & Scott, 2016; Jamieson et al., 2025",parent:"e3",hidden:true},
+  {id:"c1a",cls:"sub-cause",x:15,y:1175,badge:"Sub-causa",title:"Miedo a perderse eventos (FOMO) y presión social",ref:"Woods & Scott, 2016",parent:"c1",hidden:true},
+  {id:"c1b",cls:"sub-cause",x:185,y:1285,badge:"Sub-causa",title:"Celular como principal herramienta de entretenimiento nocturno",ref:"Infosalus, 2016",parent:"c1",hidden:true},
+  {id:"c2a",cls:"sub-cause",x:425,y:1140,badge:"Sub-causa",title:"Notificaciones constantes y scroll infinito",ref:"López, 2025; DW, 2025",parent:"c2",hidden:true},
+  {id:"c2b",cls:"sub-cause",x:595,y:1250,badge:"Sub-causa",title:"Recompensas dopaminérgicas (likes, vistas, mensajes)",ref:"Infosalus, 2016",parent:"c2",hidden:true},
+  {id:"c3a",cls:"sub-cause",x:865,y:1140,badge:"Sub-causa",title:"Desconocimiento del impacto de la luz azul en la melatonina",ref:"Infosalus, 2016; DW, 2025",parent:"c3",hidden:true},
+  {id:"c3b",cls:"sub-cause",x:1030,y:1250,badge:"Sub-causa",title:"Ausencia de rutinas de desconexión digital antes de dormir",ref:"Infosalus, 2019; López, 2025",parent:"c3",hidden:true},
+  {id:"c4a",cls:"sub-cause",x:1260,y:1175,badge:"Sub-causa",title:"Entrega de trabajos y estudio de última hora",ref:"Jamieson et al., 2025",parent:"c4",hidden:true},
+  {id:"c4b",cls:"sub-cause",x:1410,y:1285,badge:"Sub-causa",title:"Dependencia de plataformas educativas en horario nocturno",ref:"Infosalus, 2019",parent:"c4",hidden:true}
+];
+
+const canvas=document.getElementById("canvas");
+const svg=document.getElementById("lines");
+const expanded={};
+
+NODES.forEach(n=>{
+  const d=document.createElement("div");
+  d.id=n.id;
+  d.className="node "+n.cls+(n.hidden?" hidden":"");
+  d.style.left=n.x+"px";
+  d.style.top=n.y+"px";
+  if(n.id==="central"){d.style.width="400px";}
+  let html=`<div class="badge">${n.badge}</div><div class="t">${n.title}</div>`;
+  if(n.ref)html+=`<div class="r">${n.ref}</div>`;
+  if(n.hint)html+=`<div class="hint">${n.hint}</div>`;
+  d.innerHTML=html;
+  if(n.expandable){
+    d.addEventListener("click",()=>{
+      expanded[n.id]=!expanded[n.id];
+      const hintEl=d.querySelector(".hint");
+      if(hintEl)hintEl.textContent=expanded[n.id]?"Contraer":"Expandir";
+      NODES.filter(x=>x.parent===n.id).forEach(x=>{
+        const el=document.getElementById(x.id);
+        if(el){el.classList.toggle("hidden",!expanded[n.id]);}
+      });
+      draw();
+    });
+  }
+  canvas.appendChild(d);
+});
+
+function cTop(el){return{x:el.offsetLeft+el.offsetWidth/2,y:el.offsetTop};}
+function cBot(el){return{x:el.offsetLeft+el.offsetWidth/2,y:el.offsetTop+el.offsetHeight};}
+
+function curve(x1,y1,x2,y2,col,w){
+  const dy=Math.abs(y2-y1),c=Math.max(60,dy*0.32);
+  const p=document.createElementNS("http://www.w3.org/2000/svg","path");
+  p.setAttribute("d",`M${x1} ${y1}C${x1} ${y1+c},${x2} ${y2-c},${x2} ${y2}`);
+  p.setAttribute("fill","none");
+  p.setAttribute("stroke",col);
+  p.setAttribute("stroke-width",w);
+  p.setAttribute("stroke-linecap","round");
+  p.setAttribute("opacity","0.85");
+  svg.appendChild(p);
+}
+
+function draw(){
+  svg.innerHTML="";
+  ["e1","e2","e3"].forEach(id=>{
+    const f=document.getElementById(id),t=document.getElementById("central");
+    if(!f||!t)return;
+    const a=cBot(f),b=cTop(t);curve(a.x,a.y,b.x,b.y,"#378add",4);
+  });
+  ["c1","c2","c3","c4"].forEach(id=>{
+    const f=document.getElementById("central"),t=document.getElementById(id);
+    if(!f||!t)return;
+    const a=cBot(f),b=cTop(t);curve(a.x,a.y,b.x,b.y,"#ef9f27",4);
+  });
+  NODES.filter(n=>n.parent&&!document.getElementById(n.id).classList.contains("hidden")).forEach(n=>{
+    const f=document.getElementById(n.parent),t=document.getElementById(n.id);
+    if(!f||!t)return;
+    const col=n.cls.startsWith("sub-effect")?"#85b7eb":"#fac775";
+    const a=cBot(f),b=cTop(t);curve(a.x,a.y,b.x,b.y,col,2.5);
+  });
+}
+
+draw();
+window.addEventListener("resize",draw);
+
+function toggleRefs(){
+  document.getElementById("refsPanel").classList.toggle("open");
+}
+</script>
